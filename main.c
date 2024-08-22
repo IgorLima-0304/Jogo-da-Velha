@@ -1,107 +1,92 @@
 #include <stdio.h>
-#include <string.h>
 
-FILE *arquivo;
-
-void GravarUsuario(char nome[50]){
-  FILE *arquivo = fopen("arquivo.txt", "a");
-  if(arquivo == NULL){
-    printf("Erro ao abrir o arquivo");
-    return;
-  }
-  printf("Digite o nome do usuário: ");
-  scanf(" %[^\n]", nome);  
-  fprintf(arquivo, "%s\n", nome);
-  fclose(arquivo);
-  } 
-
-  
-void LerUsuario(char nome[50]){
-  FILE *arquivo = fopen("arquivo.txt", "r");
-  if(arquivo == NULL){
-    printf("Erro ao abrir o arquivo");
-  }
-
-  while(fgets(nome, 50, arquivo) != NULL){
-    printf("%s", nome);
-  }
-  fclose(arquivo);
-} 
-
-void concatenarArquivos(const char *arquivo1, const char *arquivo2, const char *arquivo3) {
-    FILE *f1 = fopen(arquivo1, "r");
-    FILE *f2 = fopen(arquivo2, "r");
-    FILE *f3 = fopen(arquivo3, "w");
-
-    if (f1 == NULL || f2 == NULL || f3 == NULL) {
-        printf("Erro ao abrir um dos arquivos.\n");
+void inicializaMatriz(char matriz[3][3]) {
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            matriz[i][j] = ' ';
+        }
     }
+}
 
-    int ch;
-
-    
-    while ((ch = fgetc(f1)) != EOF) {
-        fputc(ch, f3);
+void imprimeMatriz(char matriz[3][3]) {
+    printf("   0   1   2\n");
+    for (int i = 0; i < 3; i++) {
+        printf("%d", i);
+        for (int j = 0; j < 3; j++) {
+            printf(" %c ", matriz[i][j]);
+            if (j < 2) printf("|");
+        }
+        printf("\n");
+        if (i < 2) printf("  --|---|--\n");
     }
+}
 
-
-    while ((ch = fgetc(f2)) != EOF) {
-        fputc(ch, f3);
+int coordenadaValida(char matriz[3][3], int linha, int coluna) {
+    if (linha < 0 || linha > 2 || coluna < 0 || coluna > 2) {
+        printf("Posição fora do tabuleiro. Tente novamente.\n");
+        return 0;
+    } else if (matriz[linha][coluna] != ' ') {
+        printf("Posição já ocupada. Tente novamente.\n");
+        return 0;
     }
-    
-    printf("Arquivo gerado.\n");
-
-    fclose(f1);
-    fclose(f2);
-    fclose(f3);
+    return 1;
 }
 
 int main(void) {
-  char nome[50];
-  char arquivo1[100], arquivo2[100], arquivo3[100];
-  int opcaoarq;
-  int opcao;
+    char nome1[20], nome2[20];
+    char tabuleiro[3][3];
+    char jogadorAtual = 'X';
+    int linha, coluna;
+    int jogadas = 0;
+    int vencedor = 0;
 
-printf("Digite 1 para Tarefa1 ou 2 para Tarefa2: ");
-scanf("%d", &opcao);
+    inicializaMatriz(tabuleiro);
 
-  switch(opcao){
-    case 1:
-      printf("Digite 1 para gravar um usuário, 2 para ler o arquivo ou 3 para sair: ");
-      scanf("%d", &opcaoarq);
-      switch(opcaoarq){
-        case 1: 
-          GravarUsuario(nome);
-        break;
+    printf("Bem-vindo ao JOGO DA VELHA\n");
 
-        case 2:
-          LerUsuario(nome);
-        break;
+    printf("Informe o nome do jogador 1: ");
+    scanf("%s", nome1);
+    printf("Informe o nome do jogador 2: ");
+    scanf("%s", nome2);
 
-        case 3:
-          printf("Saindo...");
-        break;
+    printf("\n***J O G O  D A  V E L H A***\n");
+    printf("******************************\n");
+    printf("Nome do Jogador 1: %s\n", nome1);
+    printf("Nome do Jogador 2: %s\n", nome2);
+    printf("\nBoa sorte, jogadores %s e %s!\n", nome1, nome2);
+    printf("******************************\n");
 
-        default:
-        printf("Opção inválida");
-          }
-    break;
+    while (vencedor == 0 && jogadas < 9) {
+        imprimeMatriz(tabuleiro);
 
-    case 2:
-        printf("Informe o nome do primeiro arquivo: ");
-        scanf("%s", arquivo1);
+        printf("Jogador %c, insira a linha e a coluna (0, 1 ou 2): ", jogadorAtual);
+        scanf("%d %d", &linha, &coluna);
 
-        printf("Informe o nome do segundo arquivo: ");
-        scanf("%s", arquivo2);
+        if (coordenadaValida(tabuleiro, linha, coluna)) {
+            tabuleiro[linha][coluna] = jogadorAtual;
+            jogadas++;
 
-        printf("Informe o nome do arquivo de saída: ");
-        scanf("%s", arquivo3);
+            for (int i = 0; i < 3; i++) {
+                if (tabuleiro[i][0] == jogadorAtual && tabuleiro[i][1] == jogadorAtual && tabuleiro[i][2] == jogadorAtual) {
+                    vencedor = 1;
+                }
+            }
+            for (int j = 0; j < 3; j++) {
+                if (tabuleiro[0][j] == jogadorAtual && tabuleiro[1][j] == jogadorAtual && tabuleiro[2][j] == jogadorAtual) {
+                    vencedor = 1;
+                }
+            }
+            if ((tabuleiro[0][0] == jogadorAtual && tabuleiro[1][1] == jogadorAtual && tabuleiro[2][2] == jogadorAtual) ||
+                (tabuleiro[0][2] == jogadorAtual && tabuleiro[1][1] == jogadorAtual && tabuleiro[2][0] == jogadorAtual)) {
+                vencedor = 1;
+            }
+            if (vencedor == 0) {
+                jogadorAtual = (jogadorAtual == 'X') ? 'O' : 'X';
+            }
+        }
+    }
 
-        concatenarArquivos(arquivo1, arquivo2, arquivo3);
-       break;
+    imprimeMatriz(tabuleiro);
 
-    default:
-    printf("Opção inválida");
-  }
-  return 0;
+    return 0;
 }
